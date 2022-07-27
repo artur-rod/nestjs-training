@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import bcrypt from 'src/shared/helpers/bcript';
 import { Repository } from 'typeorm';
 import { CreateUserDTO } from './dto/createUserDTO';
 import { UpdateUserDTO } from './dto/updateUserDTO';
@@ -28,7 +29,17 @@ export class UsersService {
     return user;
   }
 
+  async findOneByEmail(email: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { email: email } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   async createUser(data: CreateUserDTO): Promise<User> {
+    const encryptedPassword = await bcrypt.encryptPassword(data.password);
+    data.password = encryptedPassword;
     const user = this.userRepository.create(data);
     const userSaved = await this.userRepository.save(user);
     if (!userSaved) {
