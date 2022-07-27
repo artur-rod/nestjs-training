@@ -12,4 +12,9 @@ export class UpdateUserDTO {
   @IsString()
   @IsOptional()
   email?: string;
+
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  password?: string;
 }

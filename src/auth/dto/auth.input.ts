@@ -2,15 +2,10 @@ import { Field, InputType } from '@nestjs/graphql';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 @InputType()
-export class CreateUserDTO {
+export class AuthImput {
   @Field()
   @IsString()
-  @IsNotEmpty({ message: 'This field cannot be empty' })
-  name: string;
-
-  @Field()
-  @IsString()
-  @IsNotEmpty({ message: 'This field cannot be empty' })
+  @IsNotEmpty({ message: 'Email required' })
   email: string;
 
   @Field()
