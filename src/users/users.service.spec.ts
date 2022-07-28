@@ -49,7 +49,7 @@ describe('UsersService', () => {
 
   describe('Find All Service', () => {
     it('should list all users', async () => {
-      const validUser = TestUtil.GiveAValidUser();
+      const validUser = TestUtil.ValidUser();
       mockRepository.find.mockReturnValue([validUser, validUser]);
 
       const users = await service.findAll();
@@ -59,9 +59,9 @@ describe('UsersService', () => {
     });
   });
 
-  describe('Find One Service', () => {
+  describe('Find One By Id Service', () => {
     it('should find a user', async () => {
-      const validUser = TestUtil.GiveAValidUser();
+      const validUser = TestUtil.ValidUser();
       mockRepository.findOne.mockReturnValue(validUser);
 
       const user = await service.findOne(validUser.id);
@@ -80,13 +80,37 @@ describe('UsersService', () => {
     });
   });
 
+  describe('Find One By Email Service', () => {
+    it('should find a user', async () => {
+      const validUser = TestUtil.ValidUser();
+      mockRepository.findOne.mockReturnValue(validUser);
+
+      const user = await service.findOneByEmail(validUser.email);
+      expect(user).toBeInstanceOf(User);
+      expect(user).toMatchObject({
+        name: validUser.name,
+        email: validUser.email,
+      });
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return a Not Found Exception when user doesn't exists", async () => {
+      mockRepository.findOne.mockReturnValue(null);
+      expect(
+        service.findOneByEmail('invalid@email.com'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(mockRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('Create Service', () => {
     it('should create a user', async () => {
-      const validUser = TestUtil.GiveAValidUser();
-      mockRepository.create.mockReturnValue(validUser);
-      mockRepository.save.mockReturnValue(validUser);
+      const validUserData = TestUtil.ValidUserToCreate();
+      const validUser = TestUtil.ValidUser();
+      mockRepository.create.mockReturnValue(validUserData);
+      mockRepository.save.mockReturnValue(validUserData);
 
-      const createdUser = await service.createUser(validUser);
+      const createdUser = await service.createUser(validUserData);
       expect(createdUser).toBeInstanceOf(User);
       expect(createdUser).toMatchObject(validUser);
       expect(mockRepository.create).toHaveBeenCalledTimes(1);
@@ -94,11 +118,11 @@ describe('UsersService', () => {
     });
 
     it('should return a Internal Server Error when failed', async () => {
-      const validUser = TestUtil.GiveAValidUser();
-      mockRepository.create.mockReturnValue(validUser);
+      const validUserData = TestUtil.ValidUserToCreate();
+      mockRepository.create.mockReturnValue(validUserData);
       mockRepository.save.mockReturnValue(null);
 
-      await service.createUser(validUser).catch((error) => {
+      await service.createUser(validUserData).catch((error) => {
         expect(error).toBeInstanceOf(InternalServerErrorException);
         expect(error).toMatchObject({
           message: 'User creation failed',
@@ -111,7 +135,7 @@ describe('UsersService', () => {
 
   describe('Update Service', () => {
     it('Should update a user', async () => {
-      const validUser = TestUtil.GiveAValidUser();
+      const validUser = TestUtil.ValidUser();
       const updateUserData = {
         name: 'Updated Name',
         email: 'updated@email.com',
@@ -153,7 +177,7 @@ describe('UsersService', () => {
 
   describe('Delete User Service', () => {
     it('should delete a user', async () => {
-      const validUser = TestUtil.GiveAValidUser();
+      const validUser = TestUtil.ValidUser();
       mockRepository.findOne.mockReturnValue(validUser);
       mockRepository.delete.mockReturnValue(validUser);
 
@@ -179,7 +203,7 @@ describe('UsersService', () => {
     });
 
     it('should return false when user deletion failed', async () => {
-      const validUser = TestUtil.GiveAValidUser();
+      const validUser = TestUtil.ValidUser();
       mockRepository.findOne.mockReturnValue(validUser);
       mockRepository.delete.mockReturnValue(null);
 
